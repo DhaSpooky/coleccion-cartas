@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Álbum de Cartas de la Comunidad</title>
+  <style>
+    :root {
+      --bg-color: #0f0f13;
+      --card-bg: #1a1a24;
+      --text-color: #ffffff;
+      --comun: #9e9e9e;
+      --rara: #2196f3;
+      --epica: #9c27b0;
+      --legendaria: #ff9800;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 { margin-bottom: 10px; }
+
+    .search-container {
+      margin-bottom: 25px;
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background-color: #252533;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 200px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.2s;
+    }
+
+    .card:hover { transform: translateY(-5px); }
+
+    .Comun { border: 2px solid var(--comun); }
+    .Rara { border: 2px solid var(--rara); box-shadow: 0 0 10px rgba(33, 150, 243, 0.3); }
+    .Epica { border: 2px solid var(--epica); box-shadow: 0 0 12px rgba(156, 39, 176, 0.4); }
+    .Legendaria { border: 2px solid var(--legendaria); box-shadow: 0 0 18px rgba(255, 152, 0, 0.6); }
+
+    .card-title { font-weight: bold; font-size: 1.1rem; margin-top: 10px; }
+    .card-user { font-size: 0.85rem; color: #aaa; margin-top: 5px; }
+    .card-badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      font-weight: bold;
+      align-self: center;
+    }
+
+    .Comun .card-badge { background: var(--comun); color: #000; }
+    .Rara .card-badge { background: var(--rara); color: #fff; }
+    .Epica .card-badge { background: var(--epica); color: #fff; }
+    .Legendaria .card-badge { background: var(--legendaria); color: #000; }
+  </style>
+</head>
+<body>
+
+  <h1>Álbum de Colección</h1>
+  <div class="search-container">
+    <input type="text" id="userInput" placeholder="Buscar por usuario..." oninput="filtrarCartas()">
+  </div>
+
+  <div id="galeria" class="grid">Cargando colección...</div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAMqljQRbUV-3JvFD8mGAFzsSm0jAtudF3aERopCB5tyw2BeYOM4XDHshmBvGqGXH9/exec";
+    let todasLasCartas = [];
+
+    async function cargarDatos() {
+      try {
+        const res = await fetch(SCRIPT_URL);
+        todasLasCartas = await res.json();
+
+        // Si viene un usuario en la URL (?user=DhaSpooky)
+        const params = new URLSearchParams(window.location.search);
+        const userParam = params.get('user');
+        if (userParam) {
+          document.getElementById('userInput').value = userParam;
+        }
+
+        renderizar(todasLasCartas);
+      } catch (err) {
+        document.getElementById('galeria').innerText = "Error al cargar los datos.";
+      }
+    }
+
+    function renderizar(cartas) {
+      const contenedor = document.getElementById('galeria');
+      contenedor.innerHTML = '';
+
+      const busqueda = document.getElementById('userInput').value.toLowerCase();
+      const filtradas = cartas.filter(c => 
+        (c.Usuario || '').toLowerCase().includes(busqueda)
+      );
+
+      if (filtradas.length === 0) {
+        contenedor.innerHTML = '<p>No se encontraron cartas.</p>';
+        return;
+      }
+
+      filtradas.reverse().forEach(c => {
+        const rareza = c.Rareza || 'Comun';
+        const cardDiv = document.createElement('div');
+        cardDiv.className = `card ${rareza}`;
+        cardDiv.innerHTML = `
+          <div>
+            <div class="card-title">${c.Carta || 'Carta'}</div>
+            <div class="card-user">@${c.Usuario || 'Anónimo'}</div>
+          </div>
+          <div class="card-badge">${rareza}</div>
+        `;
+        contenedor.appendChild(cardDiv);
+      });
+    }
+
+    function filtrarCartas() {
+      renderizar(todasLasCartas);
+    }
+
+    cargarDatos();
+  </script>
+</body>
+</html>
