@@ -135,18 +135,34 @@
       }
 
       filtradas.reverse().forEach(c => {
-        const rareza = c.Rareza || 'Comun';
-        const cardDiv = document.createElement('div');
-        cardDiv.className = `card ${rareza}`;
-        cardDiv.innerHTML = `
-          <div>
-            <div class="card-title">${c.Carta || 'Carta'}</div>
-            <div class="card-user">@${c.Usuario || 'Anónimo'}</div>
-          </div>
-          <div class="card-badge">${rareza}</div>
-        `;
-        contenedor.appendChild(cardDiv);
-      });
+  const rareza = (c.Rareza || 'Comun').toLowerCase();
+  const idUnico = c.ID_Canje || c.Redeem_ID || '12345';
+
+  // Genera un número de variante estable (ej: entre 1 y 3) basado en los caracteres del ID de Twitch
+  let hash = 0;
+  for (let i = 0; i < idUnico.length; i++) {
+    hash = idUnico.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  // Ajusta el "3" final según cuántas variantes tengas creadas por rareza (ej: si tienes 3 imágenes de comunes, pon 3)
+  const variantesDisponibles = 3; 
+  const varianteSeleccionada = (Math.abs(hash) % variantesDisponibles) + 1;
+
+  // Ruta final de la imagen: ej. "img/comun_2.png", "img/rara_1.png"
+  const imgPath = `img/${rareza}_${varianteSeleccionada}.png`;
+
+  const cardDiv = document.createElement('div');
+  cardDiv.className = `card ${c.Rareza || 'Comun'}`;
+  cardDiv.innerHTML = `
+    <div>
+      <div class="card-title">${c.Carta || 'Carta'}</div>
+      <img src="${imgPath}" alt="Carta ${c.Rareza}" class="card-img" onerror="this.src='img/default.png'">
+      <div class="card-user">@${c.Usuario || 'Anónimo'}</div>
+    </div>
+    <div class="card-badge">${c.Rareza || 'Comun'}</div>
+  `;
+  contenedor.appendChild(cardDiv);
+});
     }
 
     function filtrarCartas() {
