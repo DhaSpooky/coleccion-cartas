@@ -145,7 +145,8 @@
     hash = idUnico.charCodeAt(i) + ((hash << 5) - hash);
   }
   const variantesDisponibles = 3; // Cambia esto si tienes más o menos variantes por rareza
-  const varianteSeleccionada = (Math.abs(hash) % variantesDisponibles) + 1;
+  // Lee directamente la variante registrada en la base de datos
+const varianteSeleccionada = c.Variante || 1;
 
   // Ruta final: ej. "img/comun_1.png", "img/rara_2.png"
   const imgPath = `img/${rareza}_${varianteSeleccionada}.png`;
